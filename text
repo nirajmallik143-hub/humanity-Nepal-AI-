@@ -1,0 +1,7 @@
+humanity-nepal-ai/
+├── api/
+│   └── app.py
+├── static/ (optional, if serving separate assets)
+├── templates/ (optional, if using Jinja2 HTML templates)
+├── requirements.txt
+└── vercel.jsonm
