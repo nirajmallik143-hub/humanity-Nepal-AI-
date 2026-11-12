@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sikshya AI - Shivasatakshi Training Hub</title>
+    <style>
+        :root {
+            --primary: #0f766e;
+            --secondary: #042f2e;
+            --accent: #f59e0b;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        header h1 { margin: 0; font-size: 1.5rem; }
+        header p { margin: 5px 0 0; font-size: 0.9rem; opacity: 0.9; }
+        
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        
+        .lang-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .lang-btn {
+            background: #e2e8f0;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .lang-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        
+        button.action-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button.action-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .output-box {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-size: 0.9rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Sikshya AI | शिक्षा एआई</h1>
+        <p>Shivasatakshi Community AI Training & Learning Hub</p>
+    </header>
+
+    <div class="container">
+        <!-- Language Switcher -->
+        <div class="lang-selector">
+            <button class="lang-btn active" onclick="setLanguage('en')">English</button>
+            <button class="lang-btn" onclick="setLanguage('ne')">नेपाली</button>
+            <button class="lang-btn" onclick="setLanguage('hi')">हिन्दी</button>
+        </div>
+
+        <!-- AI Assistant Card -->
+        <div class="card">
+            <h3 id="ui-title">AI Study & Problem Solver</h3>
+            <p id="ui-subtitle" style="font-size:0.85rem; color:#64748b;">Ask questions based on Nepal CDC Curriculum or local business needs.</p>
+            
+            <label id="lbl-prompt" for="user-prompt">Enter your question or topic:</label>
+            <textarea id="user-prompt" rows="3" placeholder="e.g., Explain Newton's First Law or how to price grocery items..."></textarea>
+            
+            <button class="action-btn" id="btn-run" onclick="runAIAgent()">Generate AI Response</button>
+            
+            <div class="output-box" id="ai-output" style="display:none;"></div>
+        </div>
+
+        <!-- Quick Modules Card -->
+        <div class="card">
+            <h3 id="ui-modules-title">Shivasatakshi Training Modules</h3>
+            <ul id="module-list" style="padding-left: 20px; font-size: 0.9rem; line-height: 1.6;">
+                <li><b>Module 1:</b> Smartphone Prompt Engineering (प्रम्प्ट इन्जिनियरिङ)</li>
+                <li><b>Module 2:</b> Nepal CDC Math & Science Formula Solver</li>
+                <li><b>Module 3:</b> AI for Local Kirana Shops & Business Inventory</li>
+                <li><b>Module 4:</b> Zero-Cost Mobile Python & Web Apps</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 Niraj Mallik | Mallik Group | MIT Open Source License</p>
+    </footer>
+
+    <script>
+        let currentLang = 'en';
+
+        const translations = {
+            en: {
+                title: "AI Study & Problem Solver",
+                subtitle: "Ask questions based on Nepal CDC Curriculum or local business needs.",
+                labelPrompt: "Enter your question or topic:",
+                btnText: "Generate AI Response",
+                modulesTitle: "Shivasatakshi Training Modules",
+                placeholder: "e.g., Explain Newton's First Law or how to price grocery items...",
+                sampleResponse: "Sikshya AI Response: Hello from Shivasatakshi, Jhapa! AI is designed to help you solve problems instantly on your mobile phone. (Think = Do philosophy)."
+            },
+            ne: {
+                title: "शिक्षा एआई अध्ययन तथा समस्या समाधान",
+                subtitle: "नेपाल CDC पाठ्यक्रम वा स्थानीय व्यापार आवश्यकताहरूमा आधारित प्रश्नहरू सोध्नुहोस्।",
+                labelPrompt: "तपाईको प्रश्न वा विषय यहाँ लेख्नुहोस्:",
+                btnText: "एआई उत्तर उत्पन्न गर्नुहोस्",
+                modulesTitle: "शिवताक्षी तालिम मोड्युलहरू",
+                placeholder: "जस्तै, न्युटनको पहिलो नियम स्पष्ट गर्नुहोस्...",
+                sampleResponse: "शिक्षा एआई उत्तर: शिवासताक्षी, झापाबाट स्वागत छ! एआईले तपाईको मोबाइल फोनमा तुरुन्तै समस्याहरू समाधान गर्न मद्दत गर्दछ।"
+            },
+            hi: {
+                title: "शिक्षा एआई अध्ययन और समाधान",
+                subtitle: "नेपाल CDC पाठ्यक्रम या स्थानीय व्यावसायिक आवश्यकताओं के आधार पर प्रश्न पूछें।",
+                labelPrompt: "अपना प्रश्न या विषय दर्ज करें:",
+                btnText: "AI प्रतिक्रिया उत्पन्न करें",
+                modulesTitle: "शिवताक्षी प्रशिक्षण मॉड्यूल",
+                placeholder: "उदा., न्यूटन का पहला नियम समझाइए...",
+                sampleResponse: "शिक्षा एआई प्रतिक्रिया: शिवताक्षी, झापा से नमस्ते! AI आपके मोबाइल फोन पर तुरंत समस्याओं को हल करने में मदद करता है।"
+            }
+        };
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.getElementById('ui-title').innerText = translations[lang].title;
+            document.getElementById('ui-subtitle').innerText = translations[lang].subtitle;
+            document.getElementById('lbl-prompt').innerText = translations[lang].labelPrompt;
+            document.getElementById('btn-run').innerText = translations[lang].btnText;
+            document.getElementById('ui-modules-title').innerText = translations[lang].modulesTitle;
+            document.getElementById('user-prompt').placeholder = translations[lang].placeholder;
+        }
+
+        function runAIAgent() {
+            const prompt = document.getElementById('user-prompt').value.trim();
+            const outputBox = document.getElementById('ai-output');
+            
+            if(!prompt) {
+                alert("Please enter a question or topic first!");
+                return;
+            }
+
+            outputBox.style.display = 'block';
+            outputBox.innerText = translations[currentLang].sampleResponse + "\n\nQuery Processed: \"" + prompt + "\"";
+        }
+    </script>
+</body>
+</html>
