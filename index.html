@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10251f">
+  <meta name="description" content="Humanity World — free learning and practical community resources for everyone.">
+  <title>Humanity World | Learn freely. Grow together.</title>
+  <style>
+    :root{color-scheme:light;--ink:#172821;--muted:#52635a;--green:#146c4a;--green-dark:#104c38;--mint:#e7f4ec;--gold:#e4ad43;--paper:#fbfcf8;--line:#dce7df;--white:#fff;--shadow:0 16px 42px rgba(23,40,33,.09)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}a{color:inherit}button,textarea{font:inherit}.wrap{width:min(1120px,calc(100% - 36px));margin:auto}
+    .skip{position:absolute;left:-9999px;top:auto}.skip:focus{left:12px;top:12px;background:#fff;padding:10px;z-index:5}
+    header{background:linear-gradient(120deg,#10251f,#174c39);color:#fff}.nav{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{display:flex;gap:11px;align-items:center;font-weight:800;letter-spacing:.01em}.mark{width:39px;height:39px;border-radius:13px;background:var(--gold);color:#183527;display:grid;place-items:center;font-weight:900;font-size:1.2rem}.nav a{text-decoration:none}.navlinks{display:flex;gap:24px;color:#e3eee7;font-size:.94rem}.navlinks a:hover{text-decoration:underline;text-underline-offset:5px}.nav-cta{padding:9px 14px;border:1px solid #ffffff70;border-radius:10px;font-weight:700}
+    .hero{padding:76px 0 70px;background:radial-gradient(ellipse at 85% 20%,#2b795a 0,transparent 35%)}.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;align-items:center;gap:48px}.eyebrow{font-size:.78rem;text-transform:uppercase;letter-spacing:.13em;font-weight:800;color:#a8dbb8}.hero h1{font-size:clamp(2.6rem,6vw,5.25rem);line-height:1.03;letter-spacing:-.055em;margin:15px 0 18px;max-width:760px}.hero h1 span{color:#f3c76e}.hero p{color:#e0e9e3;font-size:1.08rem;max-width:650px}.actions{display:flex;gap:12px;flex-wrap:wrap;margin:27px 0}.btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;border-radius:11px;font-weight:750;text-decoration:none;border:1px solid transparent;cursor:pointer}.primary{background:#f3c76e;color:#173628}.secondary{border-color:#ffffff75;color:white;background:transparent}.btn:hover{filter:brightness(.96);transform:translateY(-1px)}.hero-card{padding:25px;border:1px solid #ffffff37;border-radius:22px;background:#ffffff10;backdrop-filter:blur(8px)}.hero-card h2{margin:0 0 12px;font-size:1.2rem}.hero-card p{font-size:.96rem;color:#e1ebe4}.values{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.value{padding:14px;border-radius:13px;background:#ffffff12}.value strong{display:block;color:#f3c76e}.value span{color:#e1ebe4;font-size:.88rem}
+    section{padding:64px 0}.section-head{max-width:700px;margin-bottom:28px}.kicker{color:var(--green);font-size:.76rem;letter-spacing:.13em;text-transform:uppercase;font-weight:850}.section-head h2{font-size:clamp(1.9rem,4vw,3rem);line-height:1.12;letter-spacing:-.04em;margin:8px 0 12px}.section-head p,.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.card{padding:23px;background:var(--white);border:1px solid var(--line);border-radius:17px;box-shadow:var(--shadow)}.icon{width:42px;height:42px;border-radius:13px;background:var(--mint);color:var(--green);display:grid;place-items:center;font-size:1.25rem}.card h3{margin:14px 0 8px}.card p{margin:0;color:var(--muted)}.programs{background:#f0f6f0}.assistant{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:start}.panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:var(--shadow)}.languages{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.lang{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;padding:8px 12px;font-weight:700;cursor:pointer}.lang[aria-pressed="true"]{background:var(--green);color:white;border-color:var(--green)}label{display:block;font-weight:700;margin-bottom:8px}textarea{width:100%;min-height:130px;resize:vertical;border:1px solid #cbd8ce;border-radius:11px;padding:13px;color:var(--ink);background:#fcfdfb}textarea:focus,button:focus-visible,a:focus-visible{outline:3px solid #e4ad43;outline-offset:3px}.run{background:var(--green);color:white;margin-top:12px}.output{display:none;margin-top:16px;background:#f0f6f0;border-left:4px solid var(--green);border-radius:8px;padding:15px;white-space:pre-wrap;overflow-wrap:anywhere}.note{font-size:.88rem;color:var(--muted)}.principles{list-style:none;padding:0;margin:0;display:grid;gap:12px}.principles li{padding:14px 15px;border:1px solid var(--line);border-radius:11px;background:#fff}.principles strong{display:block}.footer{background:#10251f;color:#d9e7dd;padding:30px 0}.footer-inner{display:flex;justify-content:space-between;gap:18px;align-items:center;flex-wrap:wrap}.footer small{color:#b4c8ba}.footer a{color:#f3c76e}
+    @media(max-width:800px){.hero-grid,.assistant{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.hero{padding:54px 0}.navlinks{display:none}.values{grid-template-columns:1fr 1fr}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important}}
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header>
+    <div class="wrap nav">
+      <a class="brand" href="#top" aria-label="Humanity World home"><span class="mark" aria-hidden="true">H</span><span>Humanity World</span></a>
+      <nav class="navlinks" aria-label="Main navigation"><a href="#mission">Mission</a><a href="#learning">Learning</a><a href="#assistant">Study helper</a></nav>
+      <a class="nav-cta" href="#assistant">Start learning</a>
+    </div>
+    <div class="wrap hero" id="top">
+      <div class="hero-grid">
+        <div>
+          <div class="eyebrow">Education · Community · Human dignity</div>
+          <h1>Learn freely.<br><span>Grow together.</span></h1>
+          <p>Free education should be within everyone’s reach. Humanity World brings together accessible learning, practical digital skills, and community-focused ideas—with a starting point in Nepal and a welcome for learners everywhere.</p>
+          <div class="actions"><a class="btn primary" href="#learning">Explore learning</a><a class="btn secondary" href="#mission">Our mission</a></div>
+        </div>
+        <aside class="hero-card" aria-label="Our commitments">
+          <h2>Built around people</h2>
+          <p>Technology is most valuable when it helps people learn, make informed choices, and support one another. This project is an open starting point—not a replacement for teachers, local expertise, or professional advice.</p>
+          <div class="values"><div class="value"><strong>Open learning</strong><span>Knowledge without barriers</span></div><div class="value"><strong>Local relevance</strong><span>Useful in everyday life</span></div><div class="value"><strong>Human-first AI</strong><span>Clear about what it can do</span></div><div class="value"><strong>Shared progress</strong><span>For communities everywhere</span></div></div>
+        </aside>
+      </div>
+    </div>
+  </header>
+  <main id="main">
+    <section id="mission">
+      <div class="wrap">
+        <div class="section-head"><div class="kicker">Our mission</div><h2>Useful knowledge. Shared with everyone.</h2><p>We aim to make learning approachable and practical: support curiosity, strengthen digital confidence, and help communities find reliable next steps.</p></div>
+        <div class="grid">
+          <article class="card"><div class="icon" aria-hidden="true">📚</div><h3>Free learning</h3><p>Encourage lifelong learning with simple explanations, study prompts, and resources that work across ages and backgrounds.</p></article>
+          <article class="card"><div class="icon" aria-hidden="true">🤝</div><h3>Community skills</h3><p>Explore digital literacy, problem-solving, and practical ideas for education and local livelihoods.</p></article>
+          <article class="card"><div class="icon" aria-hidden="true">🌱</div><h3>Human dignity</h3><p>Build with respect, accessibility, and care—so technology supports people rather than creating new barriers.</p></article>
+        </div>
+      </div>
+    </section>
+    <section class="programs" id="learning">
+      <div class="wrap">
+        <div class="section-head"><div class="kicker">Learning pathways</div><h2>Start with what you want to understand.</h2><p>Use these topics as a guide for learning activities and community workshops.</p></div>
+        <div class="grid">
+          <article class="card"><div class="icon" aria-hidden="true">🔬</div><h3>Math & science</h3><p>Review core ideas, ask for examples, and practice explaining concepts in your own words.</p></article>
+          <article class="card"><div class="icon" aria-hidden="true">📱</div><h3>Digital confidence</h3><p>Learn safe, thoughtful use of smartphones, the web, and AI tools for everyday tasks.</p></article>
+          <article class="card"><div class="icon" aria-hidden="true">🧺</div><h3>Local enterprise</h3><p>Practice planning, record-keeping, and customer-focused problem-solving for small businesses.</p></article>
+        </div>
+      </div>
+    </section>
+    <section id="assistant">
+      <div class="wrap">
+        <div class="section-head"><div class="kicker">Learning companion</div><h2>A helpful starting point for your questions.</h2><p>This demo provides a study prompt—not a connected AI model. Verify important information with trusted teachers, health professionals, or other qualified sources.</p></div>
+        <div class="assistant">
+          <div class="panel">
+            <div class="languages" role="group" aria-label="Choose interface language"><button class="lang" type="button" data-lang="en" aria-pressed="true">English</button><button class="lang" type="button" data-lang="ne" aria-pressed="false">नेपाली</button><button class="lang" type="button" data-lang="hi" aria-pressed="false">हिन्दी</button></div>
+            <label id="question-label" for="question">What would you like to learn about?</label>
+            <textarea id="question" maxlength="1000" placeholder="For example: Explain Newton’s first law with a simple everyday example."></textarea>
+            <button id="answer-button" class="btn run" type="button">Create a study guide</button>
+            <div id="answer" class="output" role="status" aria-live="polite"></div>
+            <p class="note">Your question stays in this browser page; this demo does not send it to an AI service.</p>
+          </div>
+          <aside class="panel"><h3>Learn actively</h3><ul class="principles"><li><strong>Ask a focused question</strong>Break a big topic into smaller parts.</li><li><strong>Request an example</strong>Connect a new idea to everyday life.</li><li><strong>Check your understanding</strong>Explain the answer in your own words.</li><li><strong>Verify important claims</strong>Use trusted, up-to-date sources.</li></ul></aside>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="footer"><div class="wrap footer-inner"><div><strong>Humanity World</strong><br><small>Free learning and human-centered technology.</small></div><small>© 2026 Niraj Mallik · MIT License · <a href="https://github.com/nirajmallik143-hub">Project owner</a></small></div></footer>
+  <script>
+    const copy={
+      en:{label:'What would you like to learn about?',placeholder:'For example: Explain Newton’s first law with a simple everyday example.',button:'Create a study guide',empty:'Please enter a question or topic first.',intro:'Study guide for: ',body:'\n\n1. Write down what you already know.\n2. Split the topic into three smaller questions.\n3. Find a trusted source or ask a teacher to check the explanation.\n4. Explain the idea in your own words and try one example.',notice:'\n\nThis page is a learning aid, not a connected AI service. Verify important information with a qualified source.'},
+      ne:{label:'तपाईं के विषयमा सिक्न चाहनुहुन्छ?',placeholder:'उदाहरण: न्युटनको पहिलो नियम दैनिक जीवनको सरल उदाहरणसहित बुझाउनुहोस्।',button:'अध्ययन मार्गदर्शिका बनाउनुहोस्',empty:'कृपया पहिले प्रश्न वा विषय लेख्नुहोस्।',intro:'अध्ययन मार्गदर्शिका: ',body:'\n\n१. तपाईंलाई पहिले नै थाहा भएको कुरा लेख्नुहोस्।\n२. विषयलाई तीन साना प्रश्नमा बाँड्नुहोस्।\n३. भरपर्दो स्रोत खोज्नुहोस् वा शिक्षकसँग व्याख्या जाँच्नुहोस्।\n४. विचार आफ्नै शब्दमा बुझाउनुहोस् र एउटा उदाहरण अभ्यास गर्नुहोस्।',notice:'\n\nयो पृष्ठ अध्ययन सहयोगी हो, जडान गरिएको AI सेवा होइन। महत्वपूर्ण जानकारी योग्य स्रोतबाट जाँच गर्नुहोस्।'},
+      hi:{label:'आप किस विषय के बारे में सीखना चाहते हैं?',placeholder:'उदाहरण: न्यूटन का पहला नियम रोज़मर्रा के सरल उदाहरण से समझाइए।',button:'अध्ययन मार्गदर्शिका बनाएँ',empty:'कृपया पहले कोई प्रश्न या विषय लिखें।',intro:'अध्ययन मार्गदर्शिका: ',body:'\n\n1. जो आप पहले से जानते हैं, उसे लिखें।\n2. विषय को तीन छोटे प्रश्नों में बाँटें।\n3. किसी भरोसेमंद स्रोत से जानकारी लें या शिक्षक से जाँचें।\n4. विचार को अपने शब्दों में समझाएँ और एक उदाहरण हल करें।',notice:'\n\nयह पृष्ठ सीखने में मदद करता है, यह जुड़ी हुई AI सेवा नहीं है। महत्वपूर्ण जानकारी योग्य स्रोत से सत्यापित करें।'}
+    };
+    let language='en';
+    const question=document.getElementById('question');
+    const answer=document.getElementById('answer');
+    document.querySelectorAll('.lang').forEach(button=>button.addEventListener('click',()=>{
+      language=button.dataset.lang;
+      document.querySelectorAll('.lang').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));
+      document.getElementById('question-label').textContent=copy[language].label;
+      question.placeholder=copy[language].placeholder;
+      document.getElementById('answer-button').textContent=copy[language].button;
+      answer.style.display='none';
+    }));
+    document.getElementById('answer-button').addEventListener('click',()=>{
+      const text=question.value.trim();
+      if(!text){answer.textContent=copy[language].empty;answer.style.display='block';return;}
+      answer.textContent=copy[language].intro+text+copy[language].body+copy[language].notice;
+      answer.style.display='block';
+    });
+  </script>
+</body>
+</html>
