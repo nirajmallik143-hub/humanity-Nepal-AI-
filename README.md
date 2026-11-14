@@ -2,18 +2,17 @@
 
 **Free learning. Community empowerment. Human dignity.**
 
-Humanity World is a mobile-friendly, multilingual education landing page and learning companion. It brings together the free-education vision of the World Free Education project, the community and Nepal focus of Humanity Nepal AI, and the practical idea of helping people overcome procrastination by turning a topic into small learning steps.
+Humanity World is a mobile-friendly education platform starting in Nepal and welcoming learners everywhere. This project combines the free-education vision of World Free Education, the community focus of Humanity Nepal AI, and practical tools for turning learning goals into manageable steps.
 
-The project is designed to welcome learners in Nepal and around the world. It is an open-source starting point, not a claim that the site currently provides an online AI model or professional advice.
+## Features
 
-## What’s included
+- Responsive, accessible landing page with English, Nepali, and Hindi answer options.
+- Optional AI study-guide endpoint (`POST /api/ask`) using a server-side OpenAI API key. The key is never sent to the browser.
+- Request validation, body-size limit, concise educational prompts, provider timeouts, and generic error responses.
+- Health endpoint at `GET /api/status`.
+- Vercel deployment configuration and local Flask instructions.
 
-- Responsive, accessible landing page in `index.html`.
-- Interface language options for English, Nepali, and Hindi.
-- A local study-guide helper that runs in the browser. It does **not** call an AI provider or send questions to a server.
-- Flask app in `api/app.py` for the landing page and a `/api/status` health endpoint.
-- Vercel configuration for deployment with the Python runtime.
-- MIT License with the 2026 copyright notice for Niraj Mallik.
+AI-generated content can be inaccurate. Do not enter sensitive personal information. Verify important educational, medical, legal, financial, and safety-related information with qualified people and reliable sources. The service is an educational aid, not professional advice.
 
 ## Run locally
 
@@ -23,7 +22,7 @@ Requires Python 3.10 or later.
 python -m venv .venv
 ```
 
-Activate the virtual environment:
+Activate it:
 
 ```bash
 # Linux / macOS
@@ -33,33 +32,42 @@ source .venv/bin/activate
 .venv\Scripts\Activate.ps1
 ```
 
-Install and start the app:
+Install and start:
 
 ```bash
 pip install -r requirements.txt
+OPENAI_API_KEY="your-key" python api/app.py
+```
+
+PowerShell alternative:
+
+```powershell
+$env:OPENAI_API_KEY="your-key"
 python api/app.py
 ```
 
-Open <http://localhost:8080>. Check the health endpoint at <http://localhost:8080/api/status>.
+Open <http://127.0.0.1:8080>. Check <http://127.0.0.1:8080/api/status>. If no key is configured, the site still loads, but the AI endpoint returns a setup message.
 
-## Deploy to Vercel
+## AI configuration
 
-1. Push this repository to GitHub and import it in your Vercel account, or connect the repository if it is already imported.
-2. Keep the project root set to the repository root; the included `vercel.json` configures the Python function at `api/app.py`.
-3. In Vercel, select **Deploy**. Vercel will build and publish the site, then provide a deployment URL.
-4. For subsequent deployments, push commits to the connected branch. Vercel can create preview deployments for branches and production deployments from the configured production branch, depending on your Vercel project settings.
-5. Verify the home page and `/api/status` on the deployment URL.
+Set `OPENAI_API_KEY` as a secret environment variable in your local shell or deployment platform. Optionally set `OPENAI_MODEL` (defaults to `gpt-4o-mini`). Never commit API keys, put them in HTML/JavaScript, or add them to `vercel.json`. Rotate any key that has been exposed.
 
-Deployment requires access to the Vercel account/project and a Git integration or Vercel CLI login. Committing these files does not itself grant Vercel access or deploy to an account.
+Before opening the endpoint to a large public audience, add provider spend limits and abuse protection/rate limiting at the hosting or edge layer. The current application validates input but does not implement persistent per-user rate limiting or authentication.
 
-## AI and safety note
+## Deploy on Vercel
 
-The study helper currently produces a structured study plan in the browser; it is not generative AI. Do not enter sensitive personal information. Verify important educational, medical, legal, financial, or safety-related information with qualified people and reliable sources. The site does not provide medical, legal, or financial advice.
+1. Push the branch to GitHub and import the repository into Vercel, or connect an existing Vercel project to this repository.
+2. Set the project root to the repository root and confirm the Python runtime recognizes `api/app.py` and `requirements.txt`.
+3. In **Project Settings → Environment Variables**, add `OPENAI_API_KEY` for the environments you intend to use. Optionally add `OPENAI_MODEL`. Do not put secret values in source control.
+4. Deploy a preview first. Verify the home page, `GET /api/status`, and `POST /api/ask` with a test question. Confirm the UI shows a clear setup message when no key is configured.
+5. After verification, merge the approved pull request to the configured production branch and check the production deployment and logs.
+
+Vercel settings and supported Python deployment behavior can change. If the deployment build rejects the existing `vercel.json`, follow the current Vercel Flask framework documentation and use its recommended routing/runtime configuration for the project's detected setup.
 
 ## Copyright and license
 
-Copyright (c) 2026 Niraj Mallik. Licensed under the MIT License. See [`LICENSE`](LICENSE) for the full terms. The license and copyright notice must remain with copies or substantial portions of the software.
+Copyright (c) 2026 Niraj Mallik. Licensed under the MIT License. See [`LICENSE`](LICENSE) for the full terms. Keep the copyright and permission notice in copies or substantial portions of the software.
 
 ## Contributions
 
-Issues and pull requests that improve accessibility, translation quality, reliability, and usefulness to learners are welcome. Please keep contributions respectful, inclusive, and clear about limitations.
+Issues and pull requests that improve accessibility, translation quality, security, and usefulness to learners are welcome. Keep contributions inclusive and document any new external services or data handling.
