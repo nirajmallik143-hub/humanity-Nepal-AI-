@@ -24,15 +24,13 @@ def status():
 
 @app.post("/api/ask")
 def ask():
-    """Generate an educational study guide through the configured AI provider."""
+    """Generate an educational study guide with the server-configured AI provider."""
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         return jsonify({"error": "AI service is not configured."}), 503
-
     payload = request.get_json(silent=True)
     if not isinstance(payload, dict):
         return jsonify({"error": "Send a JSON object with question and language fields."}), 400
-
     question = payload.get("question")
     language = payload.get("language", "en")
     if not isinstance(question, str) or not question.strip():
@@ -43,21 +41,17 @@ def ask():
     if language not in SUPPORTED_LANGUAGES:
         return jsonify({"error": "Choose English, Nepali, or Hindi."}), 400
 
-    model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
     body = {
-        "model": model,
+        "model": os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),
         "messages": [
-            {
-                "role": "system",
-                "content": (
-                    "You are a careful, encouraging educational study guide for a broad audience. "
-                    "Answer in " + SUPPORTED_LANGUAGES[language] + ". Explain concepts clearly, "
-                    "show a practical example when useful, and suggest one way to check understanding. "
-                    "Be honest about uncertainty. Do not claim to be a doctor, lawyer, or financial "
-                    "advisor; for high-stakes topics, give general educational information and recommend "
-                    "a qualified professional or trusted local source. Keep the answer concise."
-                ),
-            },
+            {"role": "system", "content": (
+                "You are a careful, encouraging educational study guide for a broad audience. "
+                f"Answer in {SUPPORTED_LANGUAGES[language]}. Explain clearly, give a practical example "
+                "when useful, and suggest one way to check understanding. Be honest about uncertainty. "
+                "Do not claim to be a medical, legal, or financial advisor; for high-stakes topics, "
+                "give general educational information and recommend qualified professionals or trusted "
+                "local sources. Keep the answer concise."
+            )},
             {"role": "user", "content": question},
         ],
         "temperature": 0.4,
@@ -74,10 +68,9 @@ def ask():
             result = json.loads(response.read().decode("utf-8"))
         answer = result["choices"][0]["message"]["content"].strip()
         if not answer:
-            raise ValueError("The provider returned an empty answer.")
+            raise ValueError("Empty provider response")
         return jsonify({"answer": answer})
     except HTTPError as exc:
-        # Do not return or log provider response bodies, which may contain sensitive details.
         if exc.code in (401, 403):
             app.logger.error("AI provider credentials or permissions are invalid (HTTP %s).", exc.code)
             return jsonify({"error": "AI service configuration error."}), 502

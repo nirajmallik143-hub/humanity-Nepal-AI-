@@ -6,10 +6,10 @@ This PR consolidates the Humanity Nepal AI and World Free Education project dire
 
 - Replaced the landing page with a responsive, accessible, production-oriented design.
 - Added English, Nepali, and Hindi answer-language selection.
-- Added `POST /api/ask` backed by a server-side OpenAI-compatible API key; secrets are not exposed to the browser.
+- Added `POST /api/ask` using a server-side OpenAI API key; secrets are never exposed to the browser.
 - Added request validation, input size limits, provider timeouts, safe error responses, and educational/high-stakes topic guidance.
-- Retained `GET /api/status` and updated local run, AI configuration, and Vercel instructions.
-- Preserved the repository's MIT License and Copyright (c) 2026 Niraj Mallik notice.
+- Retained `GET /api/status` and documented local run, AI configuration, privacy, and Vercel deployment.
+- Preserved the repository MIT License and Copyright (c) 2026 Niraj Mallik notice.
 
 ## Verification
 
@@ -22,4 +22,4 @@ This PR consolidates the Humanity Nepal AI and World Free Education project dire
 
 ## Notes
 
-The AI endpoint sends a submitted prompt to the configured provider. Users should not submit sensitive information. Before broad public use, configure provider budget limits and hosting-layer abuse/rate protection; this application does not implement persistent user-level rate limiting.
+Submitted prompts are sent to the configured AI provider. Users should not submit sensitive information. Before broad public use, configure provider budget limits and hosting-layer abuse/rate protection; this application does not implement persistent per-user rate limiting.
