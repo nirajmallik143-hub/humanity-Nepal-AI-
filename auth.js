@@ -1,14 +1,14 @@
 const LANGUAGE_OPTIONS = [
   ["en", "English"], ["ne", "नेपाली"], ["hi", "हिन्दी"], ["es", "Español"],
   ["fr", "Français"], ["pt", "Português"], ["ar", "العربية"], ["zh", "中文"],
-  ["bn", "বাংলা"], ["ur", "اردو"], ["sw", "Kiswahili"], ["id", "Bahasa Indonesia"],
+  ["bn", "বাংলा"], ["ur", "اردو"], ["sw", "Kiswahili"], ["id", "Bahasa Indonesia"],
   ["de", "Deutsch"], ["ja", "日本語"], ["ko", "한국어"], ["ru", "Русский"],
   ["it", "Italiano"], ["tr", "Türkçe"], ["vi", "Tiếng Việt"], ["th", "ไทย"],
-  ["fa", "فارسی"], ["pa", "ਪੰਜਾਬੀ"], ["ta", "தமிழ்"], ["te", "తెలుగు"],
+  ["fa", "فارسی"], ["pa", "ਪੰਜਾਬ���"], ["ta", "தமிழ்"], ["te", "తెలుగు"],
   ["mr", "मराठी"], ["fil", "Filipino"], ["ha", "Hausa"], ["am", "አማርኛ"],
   ["yo", "Yorùbá"], ["uk", "Українська"], ["pl", "Polski"], ["nl", "Nederlands"],
   ["sv", "Svenska"], ["el", "Ελληνικά"], ["he", "עברית"], ["ro", "Română"],
-  ["hu", "Magyar"], ["cs", "��eština"], ["ms", "Bahasa Melayu"], ["km", "ភាសាខ្មែរ"],
+  ["hu", "Magyar"], ["cs", "Čeština"], ["ms", "Bahasa Melayu"], ["km", "ភាសាខ្មែរ"],
 ];
 
 const style = document.createElement("style");
