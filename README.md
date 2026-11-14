@@ -1,89 +1,88 @@
-# 🌍 Humanity World — Learn, grow, and help each other
+# Humanity World — learn, grow, and help each other
 
-> **A more humane world starts with shared knowledge.**
+> A more humane world starts with shared knowledge.
 
-<div align="center">
-  <img src="docs/world-3d.svg" alt="A 3D-inspired globe surrounded by Humanity World's learn, build, and care pathways" width="100%" />
-  <br />
-  <strong>Learn freely · Build practical skills · Care for one another</strong>
-</div>
+Humanity World is a multilingual learning guide. Visitors enter a shared group access code, ask a learning question, and receive a concise answer in one of 40 supported languages. The site is a mobile-friendly Progressive Web App (PWA) and can use either Google Gemini or OpenAI through a private Python/Flask API.
 
-Humanity World is a small, installable learning platform for people everywhere. Ask a study question, get a clear answer in one of 40 supported answer languages, and take a practical next step. It is designed to work on phones and computers, with an offline app shell and a server-side AI connection.
+## Live site and deployment
 
-> **Deployment status:** This repository does not yet have a live Vercel deployment. Use the deploy button below to create one; after deployment, replace the example address with your actual Vercel URL.
+- **Live site:** [humanity-nepal-ai.vercel.app](https://humanity-nepal-ai.vercel.app) (configured as this repository's project homepage; availability depends on the Vercel deployment).
+- **Deploy this repository to Vercel:** [Deploy with Vercel](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fnirajmallik143-hub%2Fhumanity-Nepal-AI-)
+- **Hosting configuration:** `vercel.json` routes requests to the Flask app in `api/app.py`.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fnirajmallik143-hub%2Fhumanity-Nepal-AI-)
+## Features
 
-**Repository:** [github.com/nirajmallik143-hub/humanity-Nepal-AI-](https://github.com/nirajmallik143-hub/humanity-Nepal-AI-) · **Deployment URL:** `https://YOUR-PROJECT.vercel.app` (replace after deployment)
+- **40 answer languages**, including English, Nepali, Hindi, Arabic, Chinese, Spanish, and French.
+- **Shared-code access gate** for a small group; there are no individual user accounts.
+- **Gemini or OpenAI provider support.** Provider API keys stay on the server and are never sent to the browser.
+- **Installable PWA** with an offline shell and mobile-friendly layout.
+- **Learning-focused answers** with practical examples, honest uncertainty, and extra care around high-stakes topics.
 
-## What it offers
+## Run locally
 
-- **A copy-and-paste group access flow:** the site owner shares a Mallik Group access code; visitors paste it into the access dialog. No Firebase, email accounts, or passwords are required.
-- **A multilingual AI learning guide:** 40 answer languages, including English, Nepali, Hindi, Arabic, Chinese, Spanish, and French.
-- **A private provider integration:** Gemini or OpenAI is called only from the Python server. Provider keys are never placed in the page or returned by the API.
-- **A mobile-friendly PWA:** install support, a cached offline shell, and reduced-motion-aware 3D-inspired styling.
-- **A human-centered learning approach:** clear explanations, practical examples, honest uncertainty, and recommendations to consult trusted professionals for high-stakes needs.
-
-## Start locally
-
-Requires Python 3.10+.
+Requires Python 3.10 or later.
 
 ```bash
 python -m venv .venv
 # macOS/Linux
 source .venv/bin/activate
-# Windows PowerShell: .venv\Scripts\Activate.ps1
+# Windows PowerShell
+.venv\Scripts\Activate.ps1
+
 pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Edit `.env` and set your own strong secrets and one provider key, then run:
+Edit `.env` and set a strong, private group code and one AI provider's key. Then start the app:
 
 ```bash
 python api/app.py
 ```
 
-Open <http://127.0.0.1:8080>. The health check is <http://127.0.0.1:8080/api/status>.
+Open <http://127.0.0.1:8080>. The readiness endpoint is <http://127.0.0.1:8080/api/status>.
 
-## Configure environment secrets
+## Configure secrets
 
-`.env` is for local development only and is ignored by Git. Never commit it, paste provider keys into the browser, or share your AI provider key with group members. On Vercel, add the same values through **Project Settings → Environment Variables**.
+`.env` is for local development only and is ignored by Git. Never commit it, put secrets in frontend code, or share provider credentials with visitors.
 
-Required access gate:
+Set these values in your local `.env` and in Vercel Project Settings → Environment Variables for the environments you intend to deploy:
 
-- `MALLIK_GROUP_CODE` — choose a long, unique code and share it only with intended visitors. Anyone holding this shared code can use the site's AI capacity. Rotate it if it is exposed.
+| Variable | Required | Description |
+| --- | --- | --- |
+| `MALLIK_GROUP_CODE` | Yes | A long, unique shared access code. Share it only with intended visitors and rotate it if exposed. |
+| `AI_PROVIDER` | Recommended | `gemini` or `openai`; explicitly choose one if both provider keys are present. |
+| `GEMINI_API_KEY` | For Gemini | Gemini API key. `GOOGLE_API_KEY` is also accepted. |
+| `GEMINI_MODEL` | No | Gemini model; defaults to `gemini-2.5-flash`. |
+| `OPENAI_API_KEY` | For OpenAI | OpenAI API key. |
+| `OPENAI_MODEL` | No | OpenAI model; defaults to `gpt-4o-mini`. |
 
-Choose one AI provider:
-
-- Gemini: `AI_PROVIDER=gemini` and `GEMINI_API_KEY=...` (or `GOOGLE_API_KEY`). Optional `GEMINI_MODEL`, default `gemini-2.5-flash`.
-- OpenAI: `AI_PROVIDER=openai` and `OPENAI_API_KEY=...`. Optional `OPENAI_MODEL`, default `gpt-4o-mini`.
-
-`AI_PROVIDER` can be omitted when exactly one provider key is configured; if both are set, explicitly choose the provider. The status route reports configuration status, never secret values.
+Configure exactly one provider key when possible. The status endpoint reports whether access and AI are configured, but never returns secret values. Vercel does not import values from your local `.env` file automatically.
 
 ## Deploy to Vercel
 
-1. Push this repository to GitHub and select **Deploy with Vercel** above (or import the repository in Vercel).
-2. In Vercel Project Settings → Environment Variables, create `MALLIK_GROUP_CODE` and your chosen provider variables. Use Preview and Production scopes as appropriate. Do **not** enter secrets in this README or browser code.
-3. Keep the repository root as the project root and use the included `vercel.json` and Python requirements.
-4. Deploy. Visit your Vercel project domain and check `/api/status`; it should show `accessConfigured: true` and `aiConfigured: true`.
-5. Copy the actual `https://<project>.vercel.app` URL into the Deployment URL above and share it. The site owner should separately share the group access code with intended visitors.
-6. Submit a learning question after entering the code. Verify it works before announcing the site.
+1. Import this GitHub repository into Vercel using the deploy link above, or connect it from the Vercel dashboard.
+2. Keep the repository root as the project root and use the included `vercel.json` configuration.
+3. Add `MALLIK_GROUP_CODE` and the selected provider's variables in Vercel Project Settings → Environment Variables. Select Preview and Production scopes as appropriate. Do not commit secrets.
+4. Deploy a Preview first. Check the build and runtime logs, then visit `/api/status` on the deployment. Confirm `accessConfigured` and `aiConfigured` are `true` and that the expected provider is shown.
+5. Test the access code and a sample learning question before sharing the deployment URL. After a successful production deployment, update the repository homepage if the URL changes.
 
-Vercel does not receive secrets from `.env` automatically: local `.env` values must be added separately in Vercel Project Settings.
+## API
 
-## API overview
+- `GET /api/status` — reports service, access, and provider readiness without exposing secrets.
+- `POST /api/access` — validates a group code. JSON body: `{"code":"your-code"}`.
+- `POST /api/ask` — asks a question. Requires the `X-Mallik-Group-Code` header and a JSON body such as `{"question":"How does rain form?","language":"en"}`.
 
-- `GET /api/status` — service/provider readiness without secret values.
-- `POST /api/access` — validates a pasted group code; request JSON: `{"code":"..."}`.
-- `POST /api/ask` — asks a question; requires `X-Mallik-Group-Code`, JSON `{"question":"...","language":"en"}`.
+Supported language codes include `en` (English), `ne` (Nepali), `hi` (Hindi), `es` (Spanish), and the other 36 languages configured in `api/app.py`.
 
-The shared group code is a basic access gate, **not strong per-person authentication**. Anyone who obtains it can use the shared AI account and may incur costs. Use a unique random code, rotate it when needed, configure provider budget limits, and add Vercel/edge rate limiting before broad public sharing. For a truly open worldwide service without a shared code, remove the gate deliberately and add abuse prevention and spending limits first.
+## Security, privacy, and responsible use
 
-## Purpose and safety
+The shared group code is a basic access gate, **not individual authentication**. Anyone who obtains it can use the site's shared AI capacity, which may incur provider costs. Choose a unique code, rotate it if exposed, and configure provider spending limits and hosting-layer rate limits.
 
-This project aims to make learning easier and encourage practical steps that can improve everyday life. AI output can be inaccurate, biased, outdated, or less fluent in some languages. Check important information with trusted local and professional sources. Do not send sensitive personal, health, financial, or identity information. Publish a privacy notice and accessibility/contact information before inviting the public.
+Questions are sent to the configured AI provider to generate answers. Do not submit sensitive personal information. AI output can be inaccurate, biased, outdated, or less fluent in some languages; check important information with trusted sources. For medical, legal, or financial decisions, consult a qualified professional or trusted local source.
 
-The project cannot itself guarantee improved outcomes for every person. Invite feedback from local communities, educators, and fluent speakers; keep the service accessible, respectful, and useful across different devices and levels of connectivity.
+## Releases
+
+To publish a release, review the changes on the default branch, create and push a version tag (for example, `v1.0.0`), then use **GitHub → Releases → Draft a new release** to select that tag, add release notes, and publish. Deployments connected to the default branch are handled by Vercel; review a Preview deployment before promoting changes to production.
 
 ## License
 
