@@ -1,4 +1,4 @@
-const CACHE_NAME = "humanity-world-shell-v1";
+const CACHE_NAME = "humanity-world-shell-v2";
 const SHELL_URLS = [
   "/",
   "/offline.html",
@@ -30,12 +30,12 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
 
-  // Never cache login configuration, protected APIs, AI prompts, or responses.
+  // Do not cache API routes, access codes, AI prompts, or generated answers.
   if (url.pathname.startsWith("/api/")) return;
 
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request).then((response) => response).catch(async () => {
+      fetch(request).catch(async () => {
         const cachedHome = await caches.match("/");
         return cachedHome || caches.match("/offline.html");
       })

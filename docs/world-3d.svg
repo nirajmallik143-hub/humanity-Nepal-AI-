@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" role="img" aria-labelledby="title desc">
+  <title id="title">Humanity World: learn, build, care</title>
+  <desc id="desc">A luminous 3D-inspired globe over an isometric landscape, surrounded by pathways for learning, practical skills, and community care.</desc>
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#071b26"/><stop offset="1" stop-color="#174b48"/></linearGradient>
+    <linearGradient id="land" x2="0.8" y2="1"><stop stop-color="#4ccbb6"/><stop offset="1" stop-color="#12614f"/></linearGradient>
+    <radialGradient id="globe" cx="32%" cy="25%"><stop stop-color="#effff6"/><stop offset=".14" stop-color="#a9f5df"/><stop offset=".58" stop-color="#29a99c"/><stop offset="1" stop-color="#0a3b4a"/></radialGradient>
+    <linearGradient id="gold" x2="1" y2="1"><stop stop-color="#ffe39a"/><stop offset="1" stop-color="#db9c42"/></linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%"><feGaussianBlur in="SourceAlpha" stdDeviation="13"/><feOffset dy="16"/><feComponentTransfer><feFuncA type="linear" slope=".35"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <pattern id="grid" width="54" height="32" patternUnits="userSpaceOnUse" patternTransform="skewY(-28)"><path d="M54 0H0V32" fill="none" stroke="#b6fff0" stroke-opacity=".14"/></pattern>
+  </defs>
+  <rect width="1200" height="480" rx="34" fill="url(#sky)"/>
+  <circle cx="930" cy="90" r="180" fill="#43dfcb" opacity=".08"/>
+  <path d="M0 350 430 170l770 150v160H0Z" fill="url(#land)"/>
+  <path d="M0 350 430 170l770 150v160H0Z" fill="url(#grid)"/>
+  <path d="m300 480 380-234 520 100M120 405l320-194 400 270M600 480l300-184" fill="none" stroke="#e1fff5" stroke-opacity=".22" stroke-width="2"/>
+  <g filter="url(#shadow)">
+    <ellipse cx="690" cy="342" rx="172" ry="43" fill="#061f25" opacity=".52"/>
+    <circle cx="690" cy="220" r="132" fill="url(#globe)" stroke="#d7fff1" stroke-opacity=".7" stroke-width="3"/>
+    <path d="M574 181q34-50 67-35l19 28-23 23 10 29-34 5-18-24-30 2m127-70 31-20 23 13-9 24-22 8 7 28-24 13-21-26 14-21zm66 87 30-7 22 17-17 30-29-2-17-20z" fill="#b7ebbd" opacity=".86"/>
+    <ellipse cx="690" cy="220" rx="58" ry="132" fill="none" stroke="#edfff5" stroke-opacity=".36" stroke-width="2"/>
+    <path d="M563 220h254M580 169h220M580 271h220" fill="none" stroke="#edfff5" stroke-opacity=".3" stroke-width="2"/>
+    <path d="M600 118a132 132 0 0 1 173 24" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="7" stroke-linecap="round"/>
+  </g>
+  <g font-family="system-ui,Segoe UI,sans-serif" font-weight="800" text-anchor="middle" filter="url(#shadow)">
+    <g transform="translate(230 235)"><path d="m-108 4 108-62 108 62L0 67Z" fill="#164c50"/><path d="M-108 4 0 67v58l-108-63Z" fill="#103c45"/><path d="M0 67 108 4v58L0 125Z" fill="#0c313b"/><path d="m-108 4 108-62 108 62L0 67Z" fill="#58d8c0"/><text y="17" fill="#08363b" font-size="20">LEARN</text></g>
+    <g transform="translate(1000 220)"><path d="m-108 4 108-62 108 62L0 67Z" fill="#164c50"/><path d="M-108 4 0 67v58l-108-63Z" fill="#103c45"/><path d="M0 67 108 4v58L0 125Z" fill="#0c313b"/><path d="m-108 4 108-62 108 62L0 67Z" fill="url(#gold)"/><text y="17" fill="#3e2d18" font-size="20">CARE</text></g>
+  </g>
+  <g font-family="system-ui,Segoe UI,sans-serif" fill="#f4fff8">
+    <text x="64" y="90" font-size="19" font-weight="800" letter-spacing="4" fill="#a8e8d4">A WORLD OF POSSIBILITY</text>
+    <text x="64" y="151" font-size="48" font-weight="850" letter-spacing="-2">Learn freely.</text>
+    <text x="64" y="203" font-size="48" font-weight="850" letter-spacing="-2" fill="#f4cc77">Grow together.</text>
+    <text x="64" y="268" font-size="18" fill="#d5ebe1">Knowledge, practical skills, and care</text>
+    <text x="64" y="295" font-size="18" fill="#d5ebe1">for people everywhere.</text>
+    <text x="64" y="407" font-size="13" font-weight="700" letter-spacing="2" fill="#b3e8d8">LEARN  ·  BUILD  ·  CARE</text>
+  </g>
+  <g fill="#f7d98f"><circle cx="930" cy="104" r="5"/><circle cx="865" cy="59" r="3"/><circle cx="1044" cy="111" r="3"/><circle cx="540" cy="84" r="4"/></g>
+</svg>
