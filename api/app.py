@@ -68,6 +68,62 @@ def _static_file(path, mimetype=None, cache_control="public, max-age=3600"):
     return response
 
 
+def _gemini_system_prompt(language):
+    return (
+        "You are a careful, encouraging educational study guide for a broad audience. "
+        f"Answer in {SUPPORTED_LANGUAGES[language]}. Explain clearly, provide a practical example "
+        "when useful, and suggest one way to check understanding. Be honest about uncertainty. "
+        "For high-stakes medical, legal, or financial topics, provide general educational context "
+        "and recommend a qualified professional or trusted local source. Keep the answer concise."
+    )
+
+
+def _call_gemini(question, language):
+    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        raise RuntimeError("Gemini API key is not configured")
+
+    model_name = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+    body = {
+        "contents": [{"role": "user", "parts": [{"text": question}]}],
+        "system_instruction": {"parts": [{"text": _gemini_system_prompt(language)}]},
+        "tools": [{"code_execution": {}}],
+        "generationConfig": {
+            "temperature": 0.4,
+            "maxOutputTokens": 700,
+        },
+    }
+    req = Request(
+        f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}",
+        data=json.dumps(body).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urlopen(req, timeout=20) as response:
+        result = json.loads(response.read().decode("utf-8"))
+
+    candidates = result.get("candidates", [])
+    if not candidates:
+        raise ValueError("Gemini returned no candidates")
+
+    parts = candidates[0].get("content", {}).get("parts", [])
+    answer_parts = []
+    for part in parts:
+        if not isinstance(part, dict):
+            continue
+        if "text" in part and part["text"]:
+            answer_parts.append(part["text"].strip())
+        elif "codeExecutionResult" in part and isinstance(part["codeExecutionResult"], dict):
+            output = part["codeExecutionResult"].get("output", "").strip()
+            if output:
+                answer_parts.append(output)
+
+    answer = "\n".join(part for part in answer_parts if part).strip()
+    if not answer:
+        raise ValueError("Gemini returned no answer text")
+    return answer
+
+
 @app.get("/")
 def home():
     with open(INDEX_FILE, encoding="utf-8") as page:
@@ -143,19 +199,18 @@ def auth_config():
 
 @app.get("/api/status")
 def status():
-    return jsonify({"status": "active", "project": "Humanity World", "version": 4})
+    return jsonify({"status": "active", "project": "Humanity World", "version": 5})
 
 
 @app.post("/api/ask")
 def ask():
     if _verified_user() is None:
         return jsonify({"error": "Sign in with a verified account to use the study guide."}), 401
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        return jsonify({"error": "AI service is not configured."}), 503
+
     payload = request.get_json(silent=True)
     if not isinstance(payload, dict):
         return jsonify({"error": "Send a JSON object with question and language fields."}), 400
+
     question = payload.get("question")
     language = payload.get("language", "en")
     if not isinstance(question, str) or not question.strip():
@@ -166,16 +221,33 @@ def ask():
     if language not in SUPPORTED_LANGUAGES:
         return jsonify({"error": "Choose a supported answer language."}), 400
 
+    gemini_api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    if gemini_api_key:
+        try:
+            answer = _call_gemini(question, language)
+            return jsonify({"answer": answer})
+        except HTTPError as exc:
+            if exc.code in (401, 403):
+                app.logger.error("Gemini credentials are invalid (HTTP %s).", exc.code)
+                return jsonify({"error": "AI service configuration error."}), 502
+            if exc.code == 429:
+                return jsonify({"error": "AI service is busy. Please try again shortly."}), 429
+            app.logger.error("Gemini request failed (HTTP %s).", exc.code)
+            return jsonify({"error": "AI service request failed."}), 502
+        except (URLError, TimeoutError):
+            return jsonify({"error": "AI service timed out or is temporarily unavailable."}), 504
+        except (KeyError, IndexError, TypeError, ValueError, json.JSONDecodeError):
+            app.logger.error("Gemini returned an unexpected response.")
+            return jsonify({"error": "AI service returned an unexpected response."}), 502
+
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        return jsonify({"error": "AI service is not configured."}), 503
+
     body = {
         "model": os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),
         "messages": [
-            {"role": "system", "content": (
-                "You are a careful, encouraging educational study guide for a broad audience. "
-                f"Answer in {SUPPORTED_LANGUAGES[language]}. Explain clearly, provide a practical example "
-                "when useful, and suggest one way to check understanding. Be honest about uncertainty. "
-                "For high-stakes medical, legal, or financial topics, provide general educational context "
-                "and recommend a qualified professional or trusted local source. Keep the answer concise."
-            )},
+            {"role": "system", "content": _gemini_system_prompt(language)},
             {"role": "user", "content": question},
         ],
         "temperature": 0.4,
