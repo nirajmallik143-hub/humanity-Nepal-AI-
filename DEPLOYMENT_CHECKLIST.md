@@ -1,42 +1,38 @@
-# GitHub and Vercel deployment checklist
+# Cross-platform PWA launch checklist
 
-## Firebase setup
+## Build and configuration
 
-- [ ] Create/register the Firebase project and Web app.
-- [ ] Enable Google in Firebase Authentication and configure OAuth consent.
-- [ ] Add localhost, Vercel preview, and production hostnames to Authorized domains.
-- [ ] Create a least-privilege service account for Admin token verification.
-- [ ] Set `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_PROJECT_ID`, and `FIREBASE_APP_ID` in the deployment environment.
-- [ ] Store the service account JSON as `FIREBASE_SERVICE_ACCOUNT_JSON` secret; never commit it.
-- [ ] Confirm first Google sign-in creates an account and subsequent sign-in returns the existing account.
+- [ ] Connect the intended GitHub repository/branch to Vercel.
+- [ ] Confirm Vercel's current Python/Flask runtime supports the `api/app.py` and `vercel.json` routing.
+- [ ] Configure Firebase Google provider, OAuth consent, and localhost/preview/production authorized domains.
+- [ ] Set Firebase Web config values in Vercel; store `FIREBASE_SERVICE_ACCOUNT_JSON` and `OPENAI_API_KEY` as private environment secrets.
+- [ ] Ensure there are no credential files, API keys, or `.env` files in Git.
+- [ ] Preserve the MIT License and Copyright (c) 2026 Niraj Mallik.
 
-## GitHub
+## Progressive Web App checks
 
-- [ ] Review the feature branch diff and preserve the MIT `LICENSE` and 2026 copyright notice.
-- [ ] Check that no `.env`, API keys, Firebase service account, or credentials are committed.
-- [ ] Open a pull request using `PR_DESCRIPTION.md`; run CI and review changes before merge.
-- [ ] Confirm the branch configured for Vercel production before merging.
+- [ ] `GET /manifest.webmanifest` returns valid manifest JSON and correct content type.
+- [ ] `GET /sw.js` returns JavaScript with service-worker scope `/` and no-cache headers.
+- [ ] Confirm `/icons/humanity.svg`, `/offline.html`, `/pwa.js`, `/auth.js`, and `/scene.css` load successfully.
+- [ ] Check the browser console/Application panel for manifest and service-worker errors.
+- [ ] Test install flow on Android Chrome and at least one supported desktop Chromium browser.
+- [ ] Test iPhone/iPad using Safari → Share → Add to Home Screen; confirm standalone launch if supported.
+- [ ] Test offline shell: load online once, go offline, revisit. Confirm login and AI clearly require a connection.
+- [ ] Confirm service worker does not cache `/api/*`, Firebase auth configuration, prompts, or AI responses.
+- [ ] Check reduced-motion preference and mobile safe-area/layout behavior.
 
-## Vercel configuration
+## Authentication and AI checks
 
-- [ ] Connect the intended GitHub repository/project and set the repository root.
-- [ ] Confirm current Vercel Python/Flask documentation supports the included `vercel.json` and `api/app.py` routing.
-- [ ] Set Firebase variables, `FIREBASE_SERVICE_ACCOUNT_JSON`, `OPENAI_API_KEY`, and optional `OPENAI_MODEL` for appropriate Preview/Production environments.
-- [ ] Redeploy after changing environment variables; review build and runtime logs.
+- [ ] Confirm first Google sign-in creates an account and subsequent sign-in reuses it.
+- [ ] Confirm unauthenticated `POST /api/ask` is denied; authenticated requests work when AI is configured.
+- [ ] Test missing secrets, empty/oversized input, supported language selection, and provider timeout/error handling.
+- [ ] Configure provider budget limits and hosting-layer rate limiting/abuse protection.
+- [ ] Never use a four-digit PIN as the account password; use Google security features/passkeys/2-step verification.
 
-## Smoke tests
+## Release and public launch
 
-- [ ] Check homepage, mobile layout, accessibility/keyboard focus, and `/api/status`.
-- [ ] Sign in with a Google account; sign out and sign back in to verify the existing account is recognized.
-- [ ] Confirm an unauthenticated `POST /api/ask` returns 401 and an authenticated request succeeds when the AI secret is configured.
-- [ ] Test an unsupported language, empty question, oversized question, missing provider secret, and provider error.
-- [ ] Confirm the language preference produces the selected AI answer language; have native speakers review translations.
-- [ ] Check logs and responses do not expose credentials or raw provider errors.
-
-## Before public launch
-
-- [ ] Configure hosting-layer abuse/rate limiting and provider spending limits.
-- [ ] Publish a privacy notice explaining Firebase sign-in and that submitted questions are sent to the configured AI provider.
-- [ ] Review provider data handling, retention, and regional requirements for the intended users.
-- [ ] Do not use a four-digit PIN as an account password; account sign-in is secured by Google/Firebase.
-- [ ] Verify production HTTPS, custom domain if used, and production smoke tests.
+- [ ] Test preview on real Android, iOS, and desktop devices/browsers.
+- [ ] Ask native speakers to check translations and AI answer quality; don't advertise unsupported languages as complete.
+- [ ] Publish privacy information explaining Firebase sign-in and AI-provider prompt handling.
+- [ ] Merge only after review, then verify the production site, HTTPS, login, PWA install, and health endpoint.
+- [ ] Document that this is a PWA, not a Play Store/App Store native application.

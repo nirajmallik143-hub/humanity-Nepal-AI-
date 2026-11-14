@@ -1,30 +1,24 @@
 ## Summary
 
-Adds Google account sign-in and broader answer-language selection to Humanity World, while keeping authentication and AI provider credentials server-verified and out of the browser.
+Make Humanity World usable as an installable Progressive Web App across supported mobile and desktop browsers, with a cached offline shell and device-specific install guidance.
 
 ## Changes
 
-- Add a floating account/language control with Google sign-in, sign-out, and a 40-language AI answer selector.
-- Use Firebase Authentication: first Google sign-in creates the account; later sign-ins reuse it.
-- Require and verify Firebase ID tokens server-side before accepting study-guide requests.
-- Add public Firebase Web config endpoint (client settings only) and a server-only service-account credential configuration.
-- Expand supported AI answer languages and document provider, privacy, and deployment setup.
-- Keep the MIT License and Copyright (c) 2026 Niraj Mallik notice.
+- Add a web app manifest, SVG app icon, service worker, offline page, and PWA install button.
+- Add Flask routes and correct response headers for PWA assets.
+- Cache only the public app shell; explicitly leave authentication/configuration and all API paths network-only.
+- Document Android/desktop browser installation and the iOS Safari Add to Home Screen flow.
+- Keep existing Firebase Google sign-in and authenticated AI flow unchanged.
+- Preserve the MIT license and Copyright (c) 2026 Niraj Mallik.
 
-## Security decisions
+## Validation
 
-A four-digit code is not used as the account password because it is trivially guessable as a standalone credential. Google sign-in is the primary account authentication. Any future PIN should only be a local convenience lock after a secure sign-in, never a replacement for it.
+- [ ] Validate manifest and PWA asset routes on preview.
+- [ ] Check service-worker scope and offline fallback.
+- [ ] Confirm `/api/*` requests are not cached.
+- [ ] Test installation and standalone launch on Android, iOS Safari, and desktop.
+- [ ] Test reduced-motion styling, responsive design, and account/AI flows.
 
-## Verification
+## Scope note
 
-- [ ] Configure Firebase Google provider, OAuth consent, and authorized domains.
-- [ ] Configure Firebase web settings, Admin service account secret, and AI provider key locally/for Vercel.
-- [ ] Verify first-time Google signup and returning-user sign-in.
-- [ ] Verify no-token request is rejected and valid Firebase token succeeds.
-- [ ] Test selected language, empty/oversized input, absent secrets, and provider failures.
-- [ ] Confirm no credentials are committed; preserve MIT/2026 copyright.
-- [ ] Review Vercel Preview deployment and logs before production.
-
-## Launch notes
-
-This is not a claim of fully translated UI or perfect native-language quality. AI language support varies and needs native-speaker review. Add hosting-layer rate limiting and publish a privacy notice before public launch.
+This delivers a PWA, not native Play Store or App Store packages. Those require separate packaging and publication steps.

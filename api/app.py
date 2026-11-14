@@ -14,6 +14,11 @@ ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
 INDEX_FILE = os.path.join(ROOT_DIR, "index.html")
 AUTH_SCRIPT = os.path.join(ROOT_DIR, "auth.js")
 SCENE_STYLESHEET = os.path.join(ROOT_DIR, "scene.css")
+PWA_SCRIPT = os.path.join(ROOT_DIR, "pwa.js")
+SERVICE_WORKER = os.path.join(ROOT_DIR, "sw.js")
+MANIFEST = os.path.join(ROOT_DIR, "manifest.webmanifest")
+OFFLINE_PAGE = os.path.join(ROOT_DIR, "offline.html")
+APP_ICON = os.path.join(ROOT_DIR, "icons", "humanity.svg")
 MAX_QUESTION_LENGTH = 2000
 SUPPORTED_LANGUAGES = {
     "en": "English", "ne": "Nepali", "hi": "Hindi", "es": "Spanish",
@@ -51,27 +56,70 @@ def _verified_user():
         return None
 
 
+def _static_file(path, mimetype=None, cache_control="public, max-age=3600"):
+    response = send_file(path, mimetype=mimetype, conditional=True)
+    response.headers["Cache-Control"] = cache_control
+    return response
+
+
 @app.get("/")
 def home():
     with open(INDEX_FILE, encoding="utf-8") as page:
         html = page.read()
-    stylesheet_tag = '<link rel="stylesheet" href="/scene.css">'
-    script_tag = '<script type="module" src="/auth.js"></script>'
-    if stylesheet_tag not in html:
-        html = html.replace("</head>", f"  {stylesheet_tag}\n</head>")
-    if script_tag not in html:
-        html = html.replace("</body>", f"  {script_tag}\n</body>")
-    return app.response_class(html, mimetype="text/html")
+    head_tags = (
+        '<link rel="manifest" href="/manifest.webmanifest">\n'
+        '<link rel="icon" href="/icons/humanity.svg" type="image/svg+xml">\n'
+        '<meta name="apple-mobile-web-app-capable" content="yes">\n'
+        '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">\n'
+        '<meta name="apple-mobile-web-app-title" content="Humanity World">'
+    )
+    if 'rel="manifest"' not in html:
+        html = html.replace("</head>", f"{head_tags}\n</head>")
+    additions = (
+        '<link rel="stylesheet" href="/scene.css">\n'
+        '<script type="module" src="/auth.js"></script>\n'
+        '<script defer src="/pwa.js"></script>'
+    )
+    if 'src="/auth.js"' not in html:
+        html = html.replace("</body>", f"{additions}\n</body>")
+    return app.response_class(html, mimetype="text/html", headers={"Cache-Control": "no-cache"})
 
 
 @app.get("/scene.css")
 def scene_stylesheet():
-    return send_file(SCENE_STYLESHEET, mimetype="text/css")
+    return _static_file(SCENE_STYLESHEET, "text/css; charset=utf-8")
 
 
 @app.get("/auth.js")
 def auth_script():
-    return send_file(AUTH_SCRIPT, mimetype="text/javascript")
+    return _static_file(AUTH_SCRIPT, "text/javascript; charset=utf-8")
+
+
+@app.get("/pwa.js")
+def pwa_script():
+    return _static_file(PWA_SCRIPT, "text/javascript; charset=utf-8")
+
+
+@app.get("/sw.js")
+def service_worker():
+    response = _static_file(SERVICE_WORKER, "application/javascript; charset=utf-8", "no-cache")
+    response.headers["Service-Worker-Allowed"] = "/"
+    return response
+
+
+@app.get("/manifest.webmanifest")
+def web_manifest():
+    return _static_file(MANIFEST, "application/manifest+json")
+
+
+@app.get("/offline.html")
+def offline_page():
+    return _static_file(OFFLINE_PAGE, "text/html; charset=utf-8")
+
+
+@app.get("/icons/humanity.svg")
+def app_icon():
+    return _static_file(APP_ICON, "image/svg+xml", "public, max-age=86400")
 
 
 @app.get("/api/auth-config")
@@ -89,13 +137,12 @@ def auth_config():
 
 @app.get("/api/status")
 def status():
-    return jsonify({"status": "active", "project": "Humanity World", "version": 2})
+    return jsonify({"status": "active", "project": "Humanity World", "version": 3})
 
 
 @app.post("/api/ask")
 def ask():
-    user = _verified_user()
-    if user is None:
+    if _verified_user() is None:
         return jsonify({"error": "Sign in with Google to use the study guide."}), 401
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
