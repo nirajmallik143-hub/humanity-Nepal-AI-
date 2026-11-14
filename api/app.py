@@ -13,6 +13,7 @@ app.config["MAX_CONTENT_LENGTH"] = 8 * 1024
 ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
 INDEX_FILE = os.path.join(ROOT_DIR, "index.html")
 AUTH_SCRIPT = os.path.join(ROOT_DIR, "auth.js")
+SCENE_STYLESHEET = os.path.join(ROOT_DIR, "scene.css")
 MAX_QUESTION_LENGTH = 2000
 SUPPORTED_LANGUAGES = {
     "en": "English", "ne": "Nepali", "hi": "Hindi", "es": "Spanish",
@@ -54,10 +55,18 @@ def _verified_user():
 def home():
     with open(INDEX_FILE, encoding="utf-8") as page:
         html = page.read()
+    stylesheet_tag = '<link rel="stylesheet" href="/scene.css">'
     script_tag = '<script type="module" src="/auth.js"></script>'
+    if stylesheet_tag not in html:
+        html = html.replace("</head>", f"  {stylesheet_tag}\n</head>")
     if script_tag not in html:
         html = html.replace("</body>", f"  {script_tag}\n</body>")
     return app.response_class(html, mimetype="text/html")
+
+
+@app.get("/scene.css")
+def scene_stylesheet():
+    return send_file(SCENE_STYLESHEET, mimetype="text/css")
 
 
 @app.get("/auth.js")
