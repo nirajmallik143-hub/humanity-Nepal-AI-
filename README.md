@@ -2,71 +2,74 @@
 
 **Free learning. Community empowerment. Human dignity.**
 
-Humanity World is a mobile-friendly education platform starting in Nepal and welcoming learners everywhere. It combines free-education goals, community learning, and practical ways to turn learning goals into manageable steps.
+Humanity World is a multilingual learning project, starting in Nepal and welcoming learners around the world. The site offers a study-guide assistant, Google account sign-in, and AI-generated answers in a selection of languages.
 
 ## Features
 
-- Responsive, accessible landing page with English, Nepali, and Hindi answer options.
-- Optional AI study-guide endpoint (`POST /api/ask`) using a server-side OpenAI API key. The key is never sent to the browser.
-- Input validation and size limits, provider timeout, generic error responses, and educational/high-stakes topic guidance.
-- Health endpoint at `GET /api/status`.
-- Vercel deployment configuration and local Flask instructions.
+- Responsive education landing page and English, Nepali, and Hindi interface elements.
+- Google sign-in through Firebase Authentication. First sign-in creates the account; later visits sign in to that same account.
+- The AI study-guide API requires a valid Firebase ID token, verified server-side with Firebase Admin.
+- Answer-language selector with 40 options. This controls AI answer language; it does not mean every part of the site is fully translated or that every model response is fluent.
+- Input validation and size limits, provider timeout, and safe error responses.
 
-AI-generated content may be inaccurate. Do not enter sensitive personal information. Verify important educational, medical, legal, financial, and safety-related information with qualified people and reliable sources. This is an educational aid, not professional advice.
+## Account security
 
-## Run locally
+This app uses Google sign-in as the account credential. **A four-digit code is not used as a password**: a 4-digit PIN has only 10,000 combinations and is unsafe as a standalone worldwide login. Use a Google account with its security protections, including passkeys or two-step verification. If a PIN is ever added, keep it only as a local convenience lock after authentication—not a substitute for account security.
 
-Requires Python 3.10 or later.
+The first successful Google sign-in creates a Firebase Auth user automatically; users do not need a separate signup flow. The provider may allow Google accounts beyond consumer `@gmail.com` addresses, depending on project settings.
+
+## Local development
+
+Requires Python 3.10 or later. Install packages:
 
 ```bash
 python -m venv .venv
-```
-
-Activate the virtual environment:
-
-```bash
-# Linux / macOS
-source .venv/bin/activate
-# Windows PowerShell
-.venv\Scripts\Activate.ps1
-```
-
-Install and start:
-
-```bash
+# Linux/macOS: source .venv/bin/activate
+# Windows PowerShell: .venv\\Scripts\\Activate.ps1
 pip install -r requirements.txt
-OPENAI_API_KEY="your-key" python api/app.py
 ```
 
-PowerShell alternative:
+Configure the Firebase and AI variables described below in your shell, then run:
 
-```powershell
-$env:OPENAI_API_KEY="your-key"
+```bash
 python api/app.py
 ```
 
-Open <http://127.0.0.1:8080>. Check <http://127.0.0.1:8080/api/status>. Without an API key the homepage still loads; the assistant shows a setup message.
+Open <http://127.0.0.1:8080>; health check: <http://127.0.0.1:8080/api/status>.
 
-## AI configuration and privacy
+## Required configuration
 
-Set `OPENAI_API_KEY` as a secret environment variable in your local shell or deployment platform. Optionally set `OPENAI_MODEL` (defaults to `gpt-4o-mini`). Never commit API keys, put them in HTML/JavaScript, or add them to `vercel.json`. Rotate any key that has been exposed.
+### Firebase
 
-Submitted questions are sent to the configured AI provider. Publish an appropriate privacy notice before public launch. Configure provider spend limits and hosting-layer abuse/rate protection before broad public use; this application validates inputs but does not implement persistent per-user rate limiting or authentication.
+1. Create a Firebase project and register a Web app.
+2. In Firebase Authentication, enable the Google provider and configure the OAuth consent screen.
+3. Add localhost and your production hostname to Firebase Authentication's authorized domains.
+4. Create a Firebase service account for server-side token verification. Store the downloaded credential JSON only as a protected secret.
+5. Set these environment variables locally and in Vercel:
+   - `FIREBASE_API_KEY` — Firebase Web app config; public client configuration, not an Admin key.
+   - `FIREBASE_AUTH_DOMAIN`
+   - `FIREBASE_PROJECT_ID`
+   - `FIREBASE_APP_ID`
+   - `FIREBASE_SERVICE_ACCOUNT_JSON` — entire service-account JSON; **private secret**.
 
-## Deploy on Vercel
+The service-account credential is never returned by `/api/auth-config`. Never commit it, a `.env` file, or private keys to GitHub. Restrict its permissions to what Firebase Auth token verification needs and rotate it if exposed.
 
-1. Push the branch to GitHub and import/connect the repository in Vercel.
-2. Set the project root to the repository root and check that the current Vercel Python/Flask runtime supports the repository's `api/app.py`, `requirements.txt`, and `vercel.json` layout.
-3. In **Project Settings → Environment Variables**, add `OPENAI_API_KEY` to the required Preview and Production environments. Optionally add `OPENAI_MODEL`. Never put secret values in source control.
-4. Deploy a preview first. Verify the homepage, `GET /api/status`, and `POST /api/ask` with a non-sensitive test prompt. Confirm missing-key behavior is clear.
-5. After review, merge the approved pull request to the configured production branch and verify the production deployment and logs.
+### AI provider
 
-Vercel settings and supported Python deployment behavior can change. If the build rejects the checked-in routing configuration, follow the current official Vercel Flask framework documentation for the detected project setup.
+Set `OPENAI_API_KEY` as a server-side secret. Optionally set `OPENAI_MODEL` (defaults to `gpt-4o-mini`). Do not place the key in browser code or `vercel.json`.
 
-## Copyright and license
+## Language and privacy notes
 
-Copyright (c) 2026 Niraj Mallik. Licensed under the MIT License. See [`LICENSE`](LICENSE) for the full terms. Keep the copyright and permission notice in copies or substantial portions of the software.
+The language selector personalizes the AI response language and remembers the selection in that browser. It does not translate every page label. The available languages are model-generated and quality can vary, especially for less-supported languages; have native speakers review translations before claiming full language support. Submitted prompts go to the configured AI provider. Do not submit sensitive personal information. Publish a privacy notice and configure provider spend controls and hosting-layer rate limiting before public launch. This project is an educational aid, not professional medical, legal, or financial advice.
 
-## Contributions
+## Vercel deployment
 
-Issues and pull requests that improve accessibility, translation quality, security, and usefulness to learners are welcome. Keep contributions inclusive and document new external services or data handling.
+1. Connect the GitHub repository to a Vercel project with the repository root as the project root.
+2. Add the Firebase variables and `OPENAI_API_KEY` under Project Settings → Environment Variables for the intended Preview and Production environments. Use secret values for the service-account JSON and AI key.
+3. Confirm the current Vercel Python/Flask runtime supports the repository's `api/app.py`, `requirements.txt`, and `vercel.json` configuration.
+4. Deploy a Preview, then test sign-in, `/api/status`, and the protected AI endpoint. Merge to the configured production branch only after review.
+5. Check Vercel build/runtime logs and the production URL. Redeploy after changing environment variables.
+
+## License
+
+Copyright (c) 2026 Niraj Mallik. Licensed under the MIT License. See [`LICENSE`](LICENSE) for the full terms.
