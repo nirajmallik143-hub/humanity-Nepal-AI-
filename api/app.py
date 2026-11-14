@@ -1,16 +1,19 @@
+import hmac
 import json
 import os
 from urllib.error import HTTPError, URLError
+from urllib.parse import quote
 from urllib.request import Request, urlopen
 
-import firebase_admin
-from firebase_admin import auth as firebase_auth
-from firebase_admin import credentials
+from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_file
+
+# Local development convenience. Vercel variables are already in the process environment.
+load_dotenv()
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 8 * 1024
-ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INDEX_FILE = os.path.join(ROOT_DIR, "index.html")
 AUTH_SCRIPT = os.path.join(ROOT_DIR, "auth.js")
 SCENE_STYLESHEET = os.path.join(ROOT_DIR, "scene.css")
@@ -34,32 +37,13 @@ SUPPORTED_LANGUAGES = {
 }
 
 
-def _firebase_admin_app():
-    try:
-        return firebase_admin.get_app()
-    except ValueError:
-        raw_credentials = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
-        if not raw_credentials:
-            raise RuntimeError("Firebase Admin is not configured")
-        return firebase_admin.initialize_app(credentials.Certificate(json.loads(raw_credentials)))
+def _group_code_configured():
+    return bool(os.environ.get("MALLIK_GROUP_CODE", "").strip())
 
 
-def _verified_user():
-    header = request.headers.get("Authorization", "")
-    scheme, _, token = header.partition(" ")
-    if scheme.lower() != "bearer" or not token:
-        return None
-    try:
-        claims = firebase_auth.verify_id_token(token, app=_firebase_admin_app(), check_revoked=True)
-        if not claims.get("email_verified"):
-            # Google provider accounts are considered verified by Firebase; enforce
-            # verification for password-based email accounts.
-            if claims.get("firebase", {}).get("sign_in_provider") != "google.com":
-                return None
-        return claims
-    except Exception as exc:
-        app.logger.info("Firebase ID token verification failed: %s", type(exc).__name__)
-        return None
+def _valid_group_code(candidate):
+    expected = os.environ.get("MALLIK_GROUP_CODE", "")
+    return bool(expected and candidate and hmac.compare_digest(expected, candidate))
 
 
 def _static_file(path, mimetype=None, cache_control="public, max-age=3600"):
@@ -68,60 +52,93 @@ def _static_file(path, mimetype=None, cache_control="public, max-age=3600"):
     return response
 
 
-def _gemini_system_prompt(language):
+def _require_group_code():
+    if not _group_code_configured():
+        return jsonify({"error": "Group access is not configured by the site owner."}), 503
+    candidate = request.headers.get("X-Mallik-Group-Code", "")
+    if not _valid_group_code(candidate):
+        return jsonify({"error": "Enter the valid Mallik Group access code to continue."}), 401
+    return None
+
+
+def _system_prompt(language):
     return (
-        "You are a careful, encouraging educational study guide for a broad audience. "
-        f"Answer in {SUPPORTED_LANGUAGES[language]}. Explain clearly, provide a practical example "
-        "when useful, and suggest one way to check understanding. Be honest about uncertainty. "
-        "For high-stakes medical, legal, or financial topics, provide general educational context "
-        "and recommend a qualified professional or trusted local source. Keep the answer concise."
+        "You are a careful, encouraging educational guide for people from diverse backgrounds. "
+        f"Answer in {SUPPORTED_LANGUAGES[language]}. Explain clearly, use a practical example when useful, "
+        "and suggest one way to check understanding. Be honest about uncertainty and cultural context. "
+        "For high-stakes medical, legal, or financial topics, provide general educational context and "
+        "recommend a qualified professional or trusted local source. Do not claim to replace professional help. "
+        "Keep the answer concise, respectful, accessible, and useful to someone improving their daily life."
     )
+
+
+def _provider_name():
+    requested = os.environ.get("AI_PROVIDER", "").strip().lower()
+    if requested:
+        return requested
+    if os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"):
+        return "gemini"
+    if os.environ.get("OPENAI_API_KEY"):
+        return "openai"
+    return ""
 
 
 def _call_gemini(question, language):
     api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     if not api_key:
         raise RuntimeError("Gemini API key is not configured")
-
-    model_name = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+    model = quote(os.environ.get("GEMINI_MODEL", "gemini-2.5-flash"), safe=".-")
     body = {
         "contents": [{"role": "user", "parts": [{"text": question}]}],
-        "system_instruction": {"parts": [{"text": _gemini_system_prompt(language)}]},
-        "tools": [{"code_execution": {}}],
-        "generationConfig": {
-            "temperature": 0.4,
-            "maxOutputTokens": 700,
-        },
+        "system_instruction": {"parts": [{"text": _system_prompt(language)}]},
+        "generationConfig": {"temperature": 0.4, "maxOutputTokens": 700},
     }
     req = Request(
-        f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}",
+        f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
         data=json.dumps(body).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", "x-goog-api-key": api_key},
         method="POST",
     )
-    with urlopen(req, timeout=20) as response:
+    with urlopen(req, timeout=25) as response:
         result = json.loads(response.read().decode("utf-8"))
-
     candidates = result.get("candidates", [])
     if not candidates:
         raise ValueError("Gemini returned no candidates")
-
     parts = candidates[0].get("content", {}).get("parts", [])
-    answer_parts = []
-    for part in parts:
-        if not isinstance(part, dict):
-            continue
-        if "text" in part and part["text"]:
-            answer_parts.append(part["text"].strip())
-        elif "codeExecutionResult" in part and isinstance(part["codeExecutionResult"], dict):
-            output = part["codeExecutionResult"].get("output", "").strip()
-            if output:
-                answer_parts.append(output)
-
-    answer = "\n".join(part for part in answer_parts if part).strip()
+    answer = "\n".join(
+        part["text"].strip() for part in parts
+        if isinstance(part, dict) and isinstance(part.get("text"), str) and part["text"].strip()
+    ).strip()
     if not answer:
         raise ValueError("Gemini returned no answer text")
     return answer
+
+
+def _call_openai(question, language):
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        raise RuntimeError("OpenAI API key is not configured")
+    body = {
+        "model": os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),
+        "messages": [
+            {"role": "system", "content": _system_prompt(language)},
+            {"role": "user", "content": question},
+        ],
+        "temperature": 0.4,
+        "max_tokens": 700,
+    }
+    req = Request(
+        "https://api.openai.com/v1/chat/completions",
+        data=json.dumps(body).encode("utf-8"),
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        method="POST",
+    )
+    with urlopen(req, timeout=25) as response:
+        result = json.loads(response.read().decode("utf-8"))
+    answer = result["choices"][0]["message"]["content"]
+    if not isinstance(answer, str) or not answer.strip():
+        raise ValueError("OpenAI returned no answer text")
+    return answer.strip()
 
 
 @app.get("/")
@@ -184,33 +201,40 @@ def app_icon():
     return _static_file(APP_ICON, "image/svg+xml", "public, max-age=86400")
 
 
-@app.get("/api/auth-config")
-def auth_config():
-    config = {
-        "apiKey": os.environ.get("FIREBASE_API_KEY"),
-        "authDomain": os.environ.get("FIREBASE_AUTH_DOMAIN"),
-        "projectId": os.environ.get("FIREBASE_PROJECT_ID"),
-        "appId": os.environ.get("FIREBASE_APP_ID"),
-    }
-    if not all(config.values()):
-        return jsonify({"error": "Authentication is not configured."}), 503
-    return jsonify(config)
+@app.post("/api/access")
+def check_access():
+    if not _group_code_configured():
+        return jsonify({"error": "Group access is not configured by the site owner."}), 503
+    payload = request.get_json(silent=True)
+    code = payload.get("code") if isinstance(payload, dict) else None
+    if not isinstance(code, str) or not _valid_group_code(code.strip()):
+        return jsonify({"error": "That access code is not valid. Check it and paste it again."}), 401
+    return jsonify({"ok": True, "message": "Group access confirmed for this browser session."})
 
 
 @app.get("/api/status")
 def status():
-    return jsonify({"status": "active", "project": "Humanity World", "version": 5})
+    provider = _provider_name()
+    configured = (provider == "gemini" and bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"))) or (
+        provider == "openai" and bool(os.environ.get("OPENAI_API_KEY"))
+    )
+    return jsonify({
+        "status": "active",
+        "project": "Humanity World",
+        "accessConfigured": _group_code_configured(),
+        "aiConfigured": configured,
+        "provider": provider or None,
+    })
 
 
 @app.post("/api/ask")
 def ask():
-    if _verified_user() is None:
-        return jsonify({"error": "Sign in with a verified account to use the study guide."}), 401
-
+    access_error = _require_group_code()
+    if access_error:
+        return access_error
     payload = request.get_json(silent=True)
     if not isinstance(payload, dict):
         return jsonify({"error": "Send a JSON object with question and language fields."}), 400
-
     question = payload.get("question")
     language = payload.get("language", "en")
     if not isinstance(question, str) or not question.strip():
@@ -218,68 +242,37 @@ def ask():
     question = question.strip()
     if len(question) > MAX_QUESTION_LENGTH:
         return jsonify({"error": f"Question must be {MAX_QUESTION_LENGTH} characters or fewer."}), 413
-    if language not in SUPPORTED_LANGUAGES:
+    if not isinstance(language, str) or language not in SUPPORTED_LANGUAGES:
         return jsonify({"error": "Choose a supported answer language."}), 400
 
-    gemini_api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-    if gemini_api_key:
-        try:
-            answer = _call_gemini(question, language)
-            return jsonify({"answer": answer})
-        except HTTPError as exc:
-            if exc.code in (401, 403):
-                app.logger.error("Gemini credentials are invalid (HTTP %s).", exc.code)
-                return jsonify({"error": "AI service configuration error."}), 502
-            if exc.code == 429:
-                return jsonify({"error": "AI service is busy. Please try again shortly."}), 429
-            app.logger.error("Gemini request failed (HTTP %s).", exc.code)
-            return jsonify({"error": "AI service request failed."}), 502
-        except (URLError, TimeoutError):
-            return jsonify({"error": "AI service timed out or is temporarily unavailable."}), 504
-        except (KeyError, IndexError, TypeError, ValueError, json.JSONDecodeError):
-            app.logger.error("Gemini returned an unexpected response.")
-            return jsonify({"error": "AI service returned an unexpected response."}), 502
-
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        return jsonify({"error": "AI service is not configured."}), 503
-
-    body = {
-        "model": os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),
-        "messages": [
-            {"role": "system", "content": _gemini_system_prompt(language)},
-            {"role": "user", "content": question},
-        ],
-        "temperature": 0.4,
-        "max_tokens": 700,
-    }
-    req = Request(
-        "https://api.openai.com/v1/chat/completions",
-        data=json.dumps(body).encode("utf-8"),
-        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-        method="POST",
-    )
+    provider = _provider_name()
+    if provider not in {"gemini", "openai"}:
+        return jsonify({"error": "AI is not configured. The site owner must set an AI provider and API key."}), 503
     try:
-        with urlopen(req, timeout=20) as response:
-            result = json.loads(response.read().decode("utf-8"))
-        answer = result["choices"][0]["message"]["content"].strip()
-        if not answer:
-            raise ValueError("Empty provider response")
+        answer = _call_gemini(question, language) if provider == "gemini" else _call_openai(question, language)
         return jsonify({"answer": answer})
     except HTTPError as exc:
         if exc.code in (401, 403):
             app.logger.error("AI provider credentials or permissions are invalid (HTTP %s).", exc.code)
-            return jsonify({"error": "AI service configuration error."}), 502
+            return jsonify({"error": "AI provider setup error. Please contact the site owner."}), 502
         if exc.code == 429:
             return jsonify({"error": "AI service is busy. Please try again shortly."}), 429
         app.logger.error("AI provider request failed (HTTP %s).", exc.code)
-        return jsonify({"error": "AI service request failed."}), 502
+        return jsonify({"error": "AI service request failed. Please try again later."}), 502
     except (URLError, TimeoutError):
         return jsonify({"error": "AI service timed out or is temporarily unavailable."}), 504
     except (KeyError, IndexError, TypeError, ValueError, json.JSONDecodeError):
         app.logger.error("AI provider returned an unexpected response.")
         return jsonify({"error": "AI service returned an unexpected response."}), 502
+    except RuntimeError as exc:
+        app.logger.error("AI provider is not configured: %s", exc)
+        return jsonify({"error": "AI provider setup is incomplete. Please contact the site owner."}), 503
+
+
+@app.errorhandler(413)
+def request_too_large(_error):
+    return jsonify({"error": "Request is too large."}), 413
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=int(os.environ.get("PORT", "8080")), debug=False)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "8080")), debug=False)
