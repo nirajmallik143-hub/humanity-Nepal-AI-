@@ -14,6 +14,15 @@
 - [ ] Set Firebase variables plus `OPENAI_API_KEY` and optional `OPENAI_MODEL` as Vercel environment variables for Preview and Production.
 - [ ] Deploy Preview; inspect build/runtime logs before production merge.
 
+## Local `.env` protection
+`.env` is ignored by Git via the repository-root `.gitignore`. On a local checkout, use these commands to restrict permissions and verify Git ignores the file. The `printf` command is only needed if `.env` is not already listed in `.gitignore` (it is already listed in this repository):
+
+```sh
+chmod 600 .env
+printf '\n.env\n' >> .gitignore
+git check-ignore -v .env
+```
+
 ## Authentication checks
 - [ ] Create an account with a unique password (no shared `1234` password), verify email, and sign in.
 - [ ] Test Google signup/login and returning-user login.
