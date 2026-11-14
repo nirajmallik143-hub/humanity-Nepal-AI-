@@ -1,24 +1,24 @@
 ## Summary
 
-Make Humanity World usable as an installable Progressive Web App across supported mobile and desktop browsers, with a cached offline shell and device-specific install guidance.
+Updates the Humanity World sign-in experience to support individual email/password accounts and Google sign-in through Firebase Authentication, matching the supplied student portal reference. Also keeps the installable PWA and multilingual study experience.
 
 ## Changes
 
-- Add a web app manifest, SVG app icon, service worker, offline page, and PWA install button.
-- Add Flask routes and correct response headers for PWA assets.
-- Cache only the public app shell; explicitly leave authentication/configuration and all API paths network-only.
-- Document Android/desktop browser installation and the iOS Safari Add to Home Screen flow.
-- Keep existing Firebase Google sign-in and authenticated AI flow unchanged.
-- Preserve the MIT license and Copyright (c) 2026 Niraj Mallik.
+- Add a responsive dark, glass-style account modal with Sign in / Sign up tabs.
+- Add Firebase email/password signup, email verification, sign-in, and password reset; retain Google authentication.
+- Enforce Firebase ID-token validation server-side and require email verification for password-based accounts before protected AI access.
+- Recommend unique passwords of at least 12 characters; do not add a shared `1234` credential.
+- Document Firebase setup, secrets, AI configuration, PWA installation, and deployment.
 
-## Validation
+## Verification
 
-- [ ] Validate manifest and PWA asset routes on preview.
-- [ ] Check service-worker scope and offline fallback.
-- [ ] Confirm `/api/*` requests are not cached.
-- [ ] Test installation and standalone launch on Android, iOS Safari, and desktop.
-- [ ] Test reduced-motion styling, responsive design, and account/AI flows.
+- [ ] Configure Firebase Email/Password and Google providers and authorized domains.
+- [ ] Test signup, verification, login, reset, logout, and Google sign-in.
+- [ ] Verify unverified and unauthenticated API requests are rejected.
+- [ ] Test AI language selection, input validation, provider missing-key and provider-error behavior.
+- [ ] Run PWA checks on Android, iOS Safari, and desktop.
+- [ ] Confirm secrets are absent from Git; retain MIT and 2026 copyright notice.
 
-## Scope note
+## Security
 
-This delivers a PWA, not native Play Store or App Store packages. Those require separate packaging and publication steps.
+No fixed/shared password is added. Firebase manages individual user password credentials; secrets remain server-side. Add rate limiting, spend limits, and a privacy notice before public launch.

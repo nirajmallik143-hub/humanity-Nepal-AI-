@@ -1,25 +1,21 @@
-# Humanity World — install and run on mobile, desktop, and web
+# Humanity World — PWA + secure accounts
 
 **Free learning. Community empowerment. Human dignity.**
 
-Humanity World is a responsive Progressive Web App (PWA): learners can use it in a browser and, where supported, install it from the browser to an Android or desktop home/app launcher. On iPhone and iPad, users can add it from Safari’s Share menu. It is not a native App Store or Play Store binary; publishing native store apps requires a separate wrapper/build, store accounts, review, and release process.
+Humanity World is an installable Progressive Web App for mobile, desktop, and the web. It combines the projects' education and community goals with Google or verified email/password sign-in, a multilingual AI study guide, and an offline app shell.
 
 ## Features
 
-- Responsive education experience for phone, tablet, and desktop.
-- PWA web manifest, install control, app icon, service worker, and an offline shell.
-- Offline mode keeps only the app shell; Google sign-in and AI answers require internet.
-- Google sign-in using Firebase Authentication; first sign-in creates an account, later sign-ins reuse it.
-- Server-side Firebase ID-token verification for the study guide endpoint.
-- Selectable AI answer language options. AI and translation quality varies; this does not mean every UI screen is fully translated.
+- Responsive, accessible landing page with a CSS 3D-inspired visual theme.
+- PWA manifest, install controls, service worker, offline page, and app icon.
+- Firebase Authentication: Google sign-in or email/password account creation, email verification, sign-in, and password reset.
+- Server-side Firebase ID-token verification; AI requests require a verified account.
+- 40 selectable AI answer languages; the page UI itself is not fully translated into every language.
+- AI provider credentials and Firebase Admin service-account credentials stay server-side.
 
-## Install on your device
+## Password/security note
 
-- **Android / supported desktop browsers:** open the HTTPS website and use the on-page **Install app** button or your browser menu’s Install/Add to Home Screen action. Install prompts vary by browser and may require visiting the site more than once.
-- **iPhone / iPad:** open the site in Safari, tap **Share**, then **Add to Home Screen**. iOS does not expose the same install prompt as Chromium browsers.
-- **Any device:** the site remains available at its HTTPS URL in a supported modern browser. Service workers require HTTPS, except on localhost.
-
-Browser support and exact menus change; if the install button is unavailable, use the browser’s own install/add-to-home-screen menu. “Installable PWA” does not mean a native store app.
+There is **no shared password such as `1234`** in this project. A universal shared password is insecure and would let anyone access every account. Users create their own unique password (12+ characters recommended) or use Google sign-in. Firebase handles password storage and reset; this project never stores raw passwords. Email/password users must verify their address before accessing the protected AI endpoint. Enable passkeys or two-step verification on Google accounts where available.
 
 ## Local development
 
@@ -33,33 +29,37 @@ pip install -r requirements.txt
 python api/app.py
 ```
 
-Open <http://127.0.0.1:8080>. Check <http://127.0.0.1:8080/api/status>. Service worker support works on localhost.
+Open <http://127.0.0.1:8080>; health endpoint: <http://127.0.0.1:8080/api/status>.
 
-## Configuration
+## Firebase configuration
 
-### Firebase Google sign-in
+1. Create a Firebase project and register a Web app.
+2. In Firebase Authentication, enable **Google** and **Email/Password** providers.
+3. Configure the OAuth consent screen and authorized domains for localhost, Vercel Preview, and Production.
+4. Add these environment variables to local development and Vercel:
+   - `FIREBASE_API_KEY`
+   - `FIREBASE_AUTH_DOMAIN`
+   - `FIREBASE_PROJECT_ID`
+   - `FIREBASE_APP_ID`
+   - `FIREBASE_SERVICE_ACCOUNT_JSON` — full Firebase Admin service-account JSON (private secret; never commit)
+5. Test signup, verification email, sign-in, Google sign-in, and password reset.
 
-1. Register a Firebase Web app and enable Google in Firebase Authentication.
-2. Configure the OAuth consent screen and add localhost, preview, and production domains to Authorized domains.
-3. Set these server environment values: `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_PROJECT_ID`, `FIREBASE_APP_ID`.
-4. Store the Firebase Admin service-account JSON in `FIREBASE_SERVICE_ACCOUNT_JSON` as a secret. Never commit it.
+## AI configuration
 
-Google sign-in is the account credential. Do not use a four-digit code as a password. Add passkeys or Google two-step verification to the Google account for stronger security.
+Set `OPENAI_API_KEY` as a server-side secret. Optionally set `OPENAI_MODEL` (defaults to `gpt-4o-mini`). The study guide sends submitted questions to the configured AI provider. Do not send sensitive information. Add provider spend limits and hosting-layer rate limiting/abuse protection before public use.
 
-### AI study guide
+AI answers can be incorrect and vary in quality by language. Have fluent speakers review translations. This tool is an educational aid, not professional medical, legal, or financial advice. Publish a privacy notice explaining Firebase account handling and AI prompt processing.
 
-Set `OPENAI_API_KEY` as a server-side secret. Optionally set `OPENAI_MODEL` (defaults to `gpt-4o-mini`). Never put keys in browser code or source control. Configure spend controls and hosting-level rate limiting before public use.
+## Install on devices
 
-Questions submitted to the assistant are sent to the configured AI provider. Do not submit sensitive information. Publish a privacy notice and have native speakers review translations. The AI is an educational aid, not medical, legal, or financial advice.
+- Android and supported desktop browsers: open the HTTPS site and use **Install app** or the browser's Install/Add to Home Screen menu.
+- iPhone/iPad: open in Safari → Share → Add to Home Screen.
+- The PWA provides an offline shell only; login and AI require internet. It is not a native Play Store or App Store app.
 
-## Vercel deployment
+## Vercel
 
-1. Connect the GitHub repository to Vercel and set the repository root as the project root.
-2. Confirm current Vercel Python/Flask support for `api/app.py`, `requirements.txt`, and `vercel.json`.
-3. Add Firebase values, `FIREBASE_SERVICE_ACCOUNT_JSON`, and `OPENAI_API_KEY` to Vercel Environment Variables for the correct Preview/Production environments. Keep service-account and provider keys private.
-4. Deploy a Preview, test PWA routes (`/manifest.webmanifest`, `/sw.js`, `/offline.html`), Google sign-in, and API responses, then merge and verify Production.
-5. Check browser dev tools for manifest/service-worker errors. Test install and offline shell on actual target devices.
+Connect the repository to Vercel, use the repository root, and configure all Firebase and AI variables in Vercel Project Settings → Environment Variables. Confirm the current Vercel Python/Flask runtime supports `api/app.py` and the checked-in routing config. Deploy a Preview, test auth/PWA/API behavior, then promote by merging to the configured production branch.
 
 ## License
 
-Copyright (c) 2026 Niraj Mallik. MIT License. See [`LICENSE`](LICENSE) for full terms.
+Copyright (c) 2026 Niraj Mallik. MIT License. See [`LICENSE`](LICENSE) for the full terms.

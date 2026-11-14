@@ -50,7 +50,13 @@ def _verified_user():
     if scheme.lower() != "bearer" or not token:
         return None
     try:
-        return firebase_auth.verify_id_token(token, app=_firebase_admin_app(), check_revoked=True)
+        claims = firebase_auth.verify_id_token(token, app=_firebase_admin_app(), check_revoked=True)
+        if not claims.get("email_verified"):
+            # Google provider accounts are considered verified by Firebase; enforce
+            # verification for password-based email accounts.
+            if claims.get("firebase", {}).get("sign_in_provider") != "google.com":
+                return None
+        return claims
     except Exception as exc:
         app.logger.info("Firebase ID token verification failed: %s", type(exc).__name__)
         return None
@@ -131,19 +137,19 @@ def auth_config():
         "appId": os.environ.get("FIREBASE_APP_ID"),
     }
     if not all(config.values()):
-        return jsonify({"error": "Google sign-in is not configured."}), 503
+        return jsonify({"error": "Authentication is not configured."}), 503
     return jsonify(config)
 
 
 @app.get("/api/status")
 def status():
-    return jsonify({"status": "active", "project": "Humanity World", "version": 3})
+    return jsonify({"status": "active", "project": "Humanity World", "version": 4})
 
 
 @app.post("/api/ask")
 def ask():
     if _verified_user() is None:
-        return jsonify({"error": "Sign in with Google to use the study guide."}), 401
+        return jsonify({"error": "Sign in with a verified account to use the study guide."}), 401
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         return jsonify({"error": "AI service is not configured."}), 503
